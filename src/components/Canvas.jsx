@@ -56,12 +56,23 @@ export function Canvas() {
     }
   };
 
+  const isComponentNotAllowed = (componentType) => {
+    const allowedTypes = ['col', 'grid']; 
+    return allowedTypes.includes(componentType);
+  };
+
   const handleDropForCol = (e, colIndex, boxIndex) => {
     console.log("handleDropForCol called ");
     e.preventDefault();
     e.stopPropagation();
 
     const componentType = e.dataTransfer.getData("componentType");
+
+    if (isComponentNotAllowed(componentType)) {
+      alert("This component cannot be dropped here.");
+      return;
+    }
+
     let initialState = {};
     setFormComponents((prevFormComponents) => {
       const updatedComponents = [...prevFormComponents];
@@ -271,7 +282,7 @@ export function Canvas() {
                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
                     onClick={() => handleDeleteComponent(index)}
                   >
-                    Delete
+                    X
                   </button>
                 </div>
                 <label
@@ -545,13 +556,15 @@ export function Canvas() {
                     handleDropForCol(e, index, 4);
                   }}
                 >
-                  <div className="border  w-full  p-4 flex flex-wrap">
-                    {`Box`}
+                  {/* <h2 className="text-lg font-semibold text-gray-800 mb-4">Box</h2>  */}
+                  <div className="border  w-full p-4 ">
+                    <div className="flex flex-wrap justify-evenly">
+                    {/* {`Box`} */}
 
                     {component.Children.map((childComponent, childIndex) => (
-                      <div key={childIndex} className="m-2">
+                      <div key={childIndex} className="flex">
                         {childComponent.type === "header" && (
-                          <div className="mt-4">
+                          <div className="">
                             <h4 className="text-lg font-semibold text-gray-800">
                               Header
                             </h4>
@@ -589,7 +602,7 @@ export function Canvas() {
                         )}
 
                         {childComponent.type === "textInput" && (
-                          <div className="mt-4">
+                          <div className="">
                             <h4 className="text-lg font-semibold text-gray-800">
                               Text Input
                             </h4>
@@ -669,7 +682,7 @@ export function Canvas() {
                         )}
 
                         {childComponent.type === "textarea" && (
-                          <div className="mt-4" key={index}>
+                          <div className="" key={index}>
                             <h4 className="text-lg font-semibold text-gray-800">
                               Text Area
                             </h4>
@@ -749,7 +762,7 @@ export function Canvas() {
                         )}
 
                         {childComponent.type === "checkbox" && (
-                          <div className="mt-4" key={index}>
+                          <div className="" key={index}>
                             <h4 className="text-lg font-semibold text-gray-800">
                               Checkbox
                             </h4>
@@ -809,7 +822,7 @@ export function Canvas() {
                         )}
 
                         {childComponent.type === "dropdown" && (
-                          <div className="mt-4" key={index}>
+                          <div className="" key={index}>
                             <h4 className="text-lg font-semibold text-gray-800">
                               Drop Down
                             </h4>
@@ -887,7 +900,7 @@ export function Canvas() {
                         {["numberinput", "datepicker", "fileupload"].includes(
                           childComponent.type
                         ) && (
-                          <div className="mt-4" key={index}>
+                          <div className="" key={index}>
                             <h4 className="text-lg font-semibold text-gray-800">
                               {childComponent.type === "numberinput" &&
                                 "Number Input"}
@@ -954,6 +967,7 @@ export function Canvas() {
                         )}
                       </div>
                     ))}
+                  </div>
                   </div>
                 </div>
 
