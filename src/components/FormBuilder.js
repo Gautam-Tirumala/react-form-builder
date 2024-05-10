@@ -57,16 +57,30 @@ function FormBuilder() {
       let res = await axios.get("http://localhost:3001/formName");
       let formName = res.data;
 
-      let dataToSend = {
-        formData: formData,
-        formName: formName,
-      };
 
-      console.log(dataToSend);
+      const formData1 = new FormData();
+
+      Object.entries(formData).forEach(([key, value]) => {
+        formData1.append(key, value);
+    });
+
+
+    formData1.append('formName', formName);
+
+console.log("formData is", formData1);
+
+  
+
+      // let dataToSend = {
+      //   formData: formData,
+      //   formName: formName,
+      // };
+
+      console.log("dataToSend is", formData1);
 
       let result = await axios.post(
         "http://localhost:3001/submittedData",
-        dataToSend
+        formData1
       );
       if (result.status === 200) {
         alert("Data added to perticular table");
@@ -97,14 +111,27 @@ function FormBuilder() {
     return validationErrors;
   };
 
+  function convert(str) {
+    var date = new Date(str),
+      mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+      day = ("0" + date.getDate()).slice(-2);
+    return [date.getFullYear(), mnth, day].join("-");
+  }
+
   const handleChangeForDate = (dateString, field) => {
     console.log("date receving is ", dateString);
-    setFormData({ ...formData, [field.label]: dateString });
+    console.log("modified date receving is ", convert(dateString));
+    const convertedDate = convert(dateString);
+    setFormData({ ...formData, [field.label]: convertedDate });
   };
 
   const handleChangeForFiles = (file, field) => {
     console.log("date receving is ", file);
-    setFormData({ ...formData, [field.label]: file });
+    file.arrayBuffer().then((buffer) => {
+      console.log("Binary data:", buffer);
+      setFormData({ ...formData, [field.label]: buffer });
+    });
+    
   };
 
   const handleChange = (e, field) => {

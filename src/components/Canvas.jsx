@@ -532,11 +532,7 @@ export function Canvas() {
 
             {component.type === "col" && (
               <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800">{`Columns ${
-                  component.rowCode
-                    ? `(add ${String(component.rowCode).length} elements)`
-                    : ""
-                }`}</h4>
+                <h4 className="text-lg font-semibold text-gray-800">Columns</h4>
                 <h4 className="text-lg font-semibold text-gray-800">
                   Drag and drop{" "}
                   {component.rowCode

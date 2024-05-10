@@ -1,14 +1,18 @@
 import React from 'react';
-import {DndContext} from '@dnd-kit/core';
+import {useDroppable} from '@dnd-kit/core';
 
-import {Draggable} from './Draggable';
-import {Droppable} from './Droppable';
-
-export default function App() {
+export default function Droppable(props) {
+  const {isOver, setNodeRef} = useDroppable({
+    id: 'droppable',
+  });
+  const style = {
+    color: isOver ? 'green' : undefined,
+  };
+  
+  
   return (
-    <DndContext>
-      <Draggable />
-      <Droppable />
-    </DndContext>
-  )
+    <div ref={setNodeRef} style={style}>
+      {props.children}
+    </div>
+  );
 }
