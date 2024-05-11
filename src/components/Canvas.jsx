@@ -1,6 +1,5 @@
 import React, { Children, useEffect, useRef, useState } from "react";
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import axios from "axios";
 import GridComponent from "./GridComponent";
@@ -13,8 +12,7 @@ export function Canvas() {
 
   const canvasRef = React.useRef(null);
 
-
-   function handleOnDragEnd(result) {
+  function handleOnDragEnd(result) {
     if (!result.destination) return;
 
     const items = Array.from(formComponents);
@@ -39,7 +37,7 @@ export function Canvas() {
       case "checkbox":
         return { label: "", placeholder: "", required: false };
       case "dropdown":
-        return { label: "", options: [], required: false };
+        return { label: "", options: [], link: "", required: false };
       case "numberinput":
         return { label: "", required: false };
       case "datepicker":
@@ -137,6 +135,11 @@ export function Canvas() {
     });
   };
 
+  function isLink(text) {
+    var urlPattern = new RegExp("https?://\\S+");
+    return urlPattern.test(text);
+  }
+
   const handleOptionsChange = (index, value) => {
     setFormComponents((prevFormComponents) => {
       const updatedComponents = [...prevFormComponents];
@@ -147,6 +150,83 @@ export function Canvas() {
       };
       return updatedComponents;
     });
+  };
+  const handleLinkChange = (index, value) => {
+    setFormComponents((prevFormComponents) => {
+      const updatedComponents = [...prevFormComponents];
+      updatedComponents[index] = {
+        ...updatedComponents[index],
+        link: value.trim(),
+      };
+      return updatedComponents;
+    });
+  };
+  const handleLinkNestedChange = (parentIndex, childIndex, value) => {
+    setFormComponents((prevFormComponents) => {
+      const updatedComponents = [...prevFormComponents];
+      const parentComponent = updatedComponents[parentIndex];
+      const updatedChildComponents = [...parentComponent.Children];
+      const updatedChildComponent = {
+        ...updatedChildComponents[childIndex],
+        link: value.trim(),
+      };
+
+      updatedChildComponents[childIndex] = updatedChildComponent;
+      updatedComponents[parentIndex] = {
+        ...parentComponent,
+        options: updatedChildComponents,
+      };
+
+      return updatedComponents;
+    });
+  };
+
+  const getDataOfOptionsFromTheLinkNested = (parentIndex, childIndex) => {
+    axios
+      .get("http://localhost:3001/optionsData")
+      .then((response) => {
+        const optionsArray = response.data;
+        setFormComponents((prevFormComponents) => {
+          const updatedComponents = [...prevFormComponents];
+          const parentComponent = updatedComponents[parentIndex];
+          const updatedChildComponents = [...parentComponent.Children];
+          const updatedChildComponent = {
+            ...updatedChildComponents[childIndex],
+            options: optionsArray,
+          };
+
+          updatedChildComponents[childIndex] = updatedChildComponent;
+
+          updatedComponents[parentIndex] = {
+            ...parentComponent,
+            Children: updatedChildComponents,
+          };
+
+          return updatedComponents;
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  const getDataOfOptionsFromTheLink = (index) => {
+    axios
+      .get("http://localhost:3001/optionsData")
+      .then((response) => {
+        const optionsArray = response.data;
+        setFormComponents((prevFormComponents) => {
+          const updatedComponents = [...prevFormComponents];
+          updatedComponents[index] = {
+            ...updatedComponents[index],
+            options: optionsArray,
+          };
+          return updatedComponents;
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   };
 
   const handleNestedOptionsChange = (parentIndex, childIndex, value) => {
@@ -508,6 +588,22 @@ export function Canvas() {
                   onChange={(e) => handleOptionsChange(index, e.target.value)}
                   className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
                 />
+                <p className="text-gray-700 mt-2">provide a link</p>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    placeholder="http://......"
+                    value={component.link}
+                    onChange={(e) => handleLinkChange(index, e.target.value)}
+                    className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
+                  <button
+                    onClick={() => getDataOfOptionsFromTheLink(index)} // Assuming getData function is defined elsewhere
+                    className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                  >
+                    Get
+                  </button>
+                </div>
                 <div className="mt-2 flex items-center">
                   <input
                     type="checkbox"
@@ -859,6 +955,33 @@ export function Canvas() {
                               }
                               className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
                             />
+                            <p className="text-gray-700 mt-2">provide a link</p>
+                            <div className="flex items-center">
+                              <input
+                                type="text"
+                                placeholder="http://......"
+                                value={component.link}
+                                onChange={(e) =>
+                                  handleLinkNestedChange(
+                                    index,
+                                    childIndex,
+                                    e.target.value
+                                  )
+                                }
+                                className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                              />
+                              <button
+                                onClick={() =>
+                                  getDataOfOptionsFromTheLinkNested(
+                                    index,
+                                    childIndex
+                                  )
+                                }
+                                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                              >
+                                Get
+                              </button>
+                            </div>
                             <div className="mt-2 flex items-center">
                               <input
                                 type="checkbox"
@@ -874,6 +997,7 @@ export function Canvas() {
                                 }
                                 className="mr-2"
                               />
+
                               <label
                                 htmlFor={`required-checkbox-${index}`}
                                 className="text-gray-700"

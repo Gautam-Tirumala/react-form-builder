@@ -5,29 +5,7 @@ import FileUploadInput from "../subComponents/FileUploadInput";
 import axios from "axios";
 
 function FormBuilder() {
-  const [formFields, setFormFields] = useState([
-    {
-        "type": "grid"
-    },
-    {
-        "type": "col",
-        "rowCode": 48,
-        "Children": [
-            {
-                "type": "checkbox",
-                "label": "Agree to Terms and conditions",
-                "placeholder": "",
-                "required": true
-            },
-            {
-                "type": "textInput",
-                "label": "Last Name",
-                "placeholder": "Enter your Name",
-                "required": false
-            }
-        ]
-    }
-]);
+  const [formFields, setFormFields] = useState([]);
 
   const [formData, setFormData] = useState({});
 
