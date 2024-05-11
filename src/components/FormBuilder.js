@@ -201,6 +201,28 @@ console.log("formData is", formData1);
             ))}
           </select>
         );
+        case "radio":
+  return (
+    <div key={index}>
+      <h4 className="text-lg font-semibold text-gray-800">{field.label}</h4>
+      <div className="flex flex-col">
+        {field.options.map((option, optionIndex) => (
+          <label key={optionIndex} className="inline-flex items-center mt-2">
+            <input
+              type="radio"
+              name={field.label}
+              value={option}
+              checked={formData[field.label] === option}
+              onChange={(e) => handleChange(e, field)}
+              className="form-radio h-5 w-5 text-blue-600"
+            />
+            <span className="ml-2 text-gray-700">{option}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+
       case "textarea":
         return (
           <textarea
@@ -272,12 +294,14 @@ console.log("formData is", formData1);
             <div key={index} className="row mb-4">
               {field.Children.map((childField, childIndex) => (
                 <div key={childIndex} className={childIndex === 0 ? `col-${digitArray[0]}` : childIndex === 1 ? `col-${digitArray[1]}` : childIndex === 2 ? `col-${digitArray[2]}` : ""}>
+                  {childField.type !== "radio" && (
                   <label className="block mb-1 font-medium text-gray-700">
                     {childField.label}
                     {childField.required && (
                       <span className="text-red-500 pl-0.5">*</span>
                     )}
                   </label>
+                  )}
 
                   {renderField(childField, childIndex)}
                   {errors[childField.label] && (
@@ -303,12 +327,14 @@ console.log("formData is", formData1);
               <div key={index} className="flex flex-row mb-4">
                 {field.Children.map((childField, childIndex) => (
                   <div key={childIndex} className="flex-1 mr-2">
+                     {childField.type !== "radio" && (
                     <label className="block mb-1 font-medium text-gray-700">
                       {childField.label}
                       {childField.required && (
                         <span className="text-red-500 pl-0.5">*</span>
                       )}
                     </label>
+                     )}
   
                     {renderField(childField, childIndex)}
                     {errors[childField.label] && (
@@ -327,7 +353,7 @@ console.log("formData is", formData1);
         else {
           return (
             <div key={index} className="mb-4">
-              {field.type !== "col" && (
+              {field.type !== "col" && field.type !== "radio" && (
                 <label className="block mb-1 font-medium text-gray-700">
                   {field.label}
                   {field.required && (

@@ -430,6 +430,42 @@ export function Canvas() {
                 </div>
               </div>
             )}
+           {component.type === "radio" && (
+  <div className="mt-4">
+    <h4 className="text-lg font-semibold text-gray-800">Radio Button</h4>
+    <div className="flex justify-end">
+      <button
+        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+        onClick={() => handleDeleteComponent(index)}
+      >
+        Delete
+      </button>
+    </div>
+    <label htmlFor={`radio-label-${index}`} className="block text-gray-700">
+      Label:
+    </label>
+    <input
+      type="text"
+      id={`radio-label-${index}`}
+      value={component.label}
+      onChange={(e) => handleComponentChange(index, "label", e.target.value)}
+      className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+    />
+    <div className="mt-2">
+    <p className="text-gray-700 mt-2">
+                  Enter Options separated by commas (,)
+                </p>
+                <input
+                  type="text"
+                  placeholder="Option 1, Option 2, ..."
+                  value={component.options?.join(", ")}
+                  onChange={(e) => handleOptionsChange(index, e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                />
+    </div>
+  </div>
+)}
+
 
             {component.type === "checkbox" && (
               <div className="mt-4">
@@ -547,7 +583,7 @@ export function Canvas() {
                 <h4 className="text-lg font-semibold text-gray-800">
                   Drag and drop{" "}
                   {component.rowCode
-                    ? `${String(component.rowCode).length} elements into box`
+                    ? `${String(component.rowCode).length} elements into box rowCode ${component.rowCode}`
                     : "your elements into box"}
                 </h4>
                 <div
@@ -680,6 +716,50 @@ export function Canvas() {
                             </div>
                           </div>
                         )}
+                         {childComponent.type === "radio" && (
+  <div className="mt-4">
+    <h4 className="text-lg font-semibold text-gray-800">Radio Button</h4>
+    <div className="flex justify-end">
+      <button
+        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+        onClick={() => handleNestedDeleteComponent(index, childIndex)}
+      >
+        Delete
+      </button>
+    </div>
+    <label htmlFor={`radio-label-${index}`} className="block text-gray-700">
+      Label:
+    </label>
+    <input
+      type="text"
+      id={`radio-label-${index}`}
+      value={component.label}
+      onChange={(e) =>handleNestedComponentChange(
+        index,
+        childIndex,
+        "label",
+        e.target.value
+      )}
+      className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+    />
+    <div className="mt-2">
+    <p className="text-gray-700 mt-2">
+                  Enter Options separated by commas (,)
+                </p>
+                <input
+                  type="text"
+                  placeholder="Option 1, Option 2, ..."
+                  value={component.options?.join(", ")}
+                  onChange={(e) => handleNestedOptionsChange(
+                    index,
+                    childIndex,
+                    e.target.value
+                  )}
+                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                />
+    </div>
+  </div>
+)}
 
                         {childComponent.type === "textarea" && (
                           <div className="" key={index}>
