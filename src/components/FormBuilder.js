@@ -22,6 +22,9 @@ function FormBuilder(props) {
         else if(props.name === "studentDropdown"){
           res = await axios.get("http://localhost:3001/formdata/studentDropdown");
         }
+        else if(props.name === "dropdownExample"){
+          res = await axios.get("http://localhost:3001/formdata/dropdownExample");
+        }
         else{
           res = await axios.get("http://localhost:3001/formdata");
         }
@@ -124,7 +127,10 @@ function FormBuilder(props) {
         formName = "form879";
       }
       else if(props.name === "studentDropdown"){
-        formName = "form326";
+        formName = "form275";
+      }
+      else if(props.name === "dropdownExample"){
+        formName = "form572";
       }
       else{
         let res = await axios.get("http://localhost:3001/formName");
@@ -229,7 +235,60 @@ console.log("formData is", formData1);
   const handleChangeDropdown = async (e, field, index) => {
     const value = e.target.value;
     if (field.linkForNext) {
-        const placeholders = field.linkForNext.match(/{[0-9]+}/g);
+      console.log("field is ",field);
+      let placeholders
+        if(field.linkForNext.match(/{[0-9]+_[0-9]+}/g).length > 0){
+          placeholders = field.linkForNext.match(/{[0-9]+_[0-9]+}/g);
+          let updatedLink = field.linkForNext
+
+          for (let i = 0; i < placeholders.length; i++) {
+            let pIndex = placeholders[i];
+            pIndex = pIndex.slice(1, -1).split('_').map(Number); // Split by underscore and convert to numbers
+          
+            // Assuming pIndex is an array containing [parentIndex, childIndex]
+            let parentIndex = pIndex[0];
+            let childIndex = pIndex[1];
+          
+            let lableForFormData = formFields[childIndex]?.label;
+            let updateLinkValue = parentIndex === index ? value : formData[lableForFormData];
+            updatedLink = updatedLink.replace(placeholders[i], updateLinkValue);
+            console.log("updatedLink is", updatedLink);
+
+            
+          }
+          const response = await axios.get(updatedLink);
+const optionsArray = response.data;
+
+if(field.ChildIndex && field.nextIndex){
+  formFields[field.nextIndex].Children[field.ChildIndex].options = [...optionsArray];
+}
+else{
+  formFields[field.nextIndex].options = [...optionsArray];
+}
+
+
+        // for(let i = 0;i<placeholders.length;i++){
+        //   let pIndex = placeholders[i];
+        //   pIndex = parseInt(pIndex.slice(1, -1));
+
+        //   let lableForFormData = formFields[pIndex]?.label
+        //   let updateLinkValue = pIndex === index ? value : formData[lableForFormData]
+        //   updatedLink = updatedLink.replace(placeholders[i], updateLinkValue)
+        // }
+       
+        // console.log("Final Updated Link: ", updatedLink);
+        // console.log("to fill data ", field.nextIndex);
+
+        // const response = await axios.get(updatedLink);
+        // const optionsArray = response.data;
+  
+        // formFields[field.nextIndex].options = [...optionsArray]
+        }
+        else{
+          placeholders = field.linkForNext.match(/{[0-9]+}/g);
+        
+        console.log("placeholders ",placeholders);
+
         let updatedLink = field.linkForNext
 
         for(let i = 0;i<placeholders.length;i++){
@@ -240,15 +299,15 @@ console.log("formData is", formData1);
           let updateLinkValue = pIndex === index ? value : formData[lableForFormData]
           updatedLink = updatedLink.replace(placeholders[i], updateLinkValue)
         }
-       
-        console.log("Final Updated Link: ", updatedLink);
-        console.log("to fill data ", field.nextIndex);
+        // console.log("Final Updated Link: ", updatedLink);
+        // console.log("to fill data ", field.nextIndex);
 
         const response = await axios.get(updatedLink);
         const optionsArray = response.data;
   
         formFields[field.nextIndex].options = [...optionsArray]
     }
+  }
     setFormData({ ...formData, [field?.label]: value });
 };
 

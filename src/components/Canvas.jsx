@@ -37,7 +37,7 @@ export function Canvas() {
       case "checkbox":
         return { label: "", placeholder: "", required: false };
       case "dropdown":
-        return { label: "", options: [], link: "",linkForNext:"",nextIndex:"", required: false };
+        return { label: "", options: [], link: "",linkForNext:"",nextIndex:"",ChildIndex:"", required: false };
       case "numberinput":
         return { label: "", required: false };
       case "datepicker":
@@ -161,6 +161,16 @@ export function Canvas() {
       return updatedComponents;
     });
   };
+  const handleChildLinkChangeForNext = (index,childIndex,property, value) => {
+    setFormComponents((prevFormComponents) => {
+      const updatedComponents = [...prevFormComponents];
+      updatedComponents[index].Children[childIndex] = {
+        ...updatedComponents[index].Children[childIndex],
+        [property]: value.trim(),
+      };
+      return updatedComponents;
+    });
+  };
 
   const handleLinkChange = (index, value) => {
     setFormComponents((prevFormComponents) => {
@@ -194,7 +204,7 @@ export function Canvas() {
 
   const getDataOfOptionsFromTheLinkNested = (parentIndex, childIndex) => {
     axios
-      .get("http://localhost:3001/optionsData")
+    .get(formComponents[parentIndex].Children[childIndex].link)
       .then((response) => {
         const optionsArray = response.data;
         setFormComponents((prevFormComponents) => {
@@ -223,7 +233,7 @@ export function Canvas() {
 
   const getDataOfOptionsFromTheLink = (index) => {
     axios
-      .get("http://localhost:3001/optionsData")
+      .get(formComponents[index].link)
       .then((response) => {
         const optionsArray = response.data;
         setFormComponents((prevFormComponents) => {
@@ -1010,6 +1020,34 @@ export function Canvas() {
                                 Get
                               </button>
                             </div>
+                            <p className="text-gray-700 mt-2">provide a link including index Number in curly braces</p>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    placeholder="http://......"
+                    value={childComponent.linkForNext}
+                    onChange={(e) => handleChildLinkChangeForNext(index,childIndex,"linkForNext", e.target.value)}
+                    className=" p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
+                  {/* <p className="text-gray-700 mt-2">Index</p> */}
+                 
+                </div>
+                <div className="flex items-center">
+                <input
+                    type="text"
+                    placeholder="Index"
+                    value={component.nextIndex}
+                    onChange={(e) => handleChildLinkChangeForNext(index,childIndex,"nextIndex", e.target.value)}
+                    className="m-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
+                   <input
+                    type="text"
+                    placeholder="ChildIndex"
+                    value={component.childIndex}
+                    onChange={(e) => handleChildLinkChangeForNext(index,childIndex,"ChildIndex", e.target.value)}
+                    className="m-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
+                  </div>
                             <div className="mt-2 flex items-center">
                               <input
                                 type="checkbox"

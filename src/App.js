@@ -23,7 +23,10 @@ export default function App() {
         <FormBuilder name="student" />
       ) : url === "http://localhost:3000/preview/studentDropdown" ? (
         <FormBuilder name="studentDropdown" />
-      ) : (
+      ) :  url === "http://localhost:3000/preview/dropdownExample" ? (
+        <FormBuilder name="dropdownExample" />
+      ) :
+       (
         <FormBuilder />
       )}
       {/* <GridComponent/> */}
