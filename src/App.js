@@ -15,16 +15,20 @@ import GridComponent from './components/GridComponent'
 // const builderView = new BuilderView(components)
 
 export default function App() {
-  const url = window.location.href
-  console.log(url)
+  const url = window.location.href;
+  console.log(url);
   return url.includes("preview") ? (
     <>
-    <FormBuilder/> 
-   
-    {/* <FormBuilder/> */}
-
-
-    {/* <GridComponent/> */}
+      {url === "http://localhost:3000/preview/student" ? (
+        <FormBuilder name="student" />
+      ) : url === "http://localhost:3000/preview/studentDropdown" ? (
+        <FormBuilder name="studentDropdown" />
+      ) : (
+        <FormBuilder />
+      )}
+      {/* <GridComponent/> */}
     </>
-  ) :  <Home/>
+  ) : (
+    <Home />
+  );
 }

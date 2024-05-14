@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import NumberInput from "../subComponents/NumberInput";
 import DatePickerInput from "../subComponents/DatePickerInput";
 import FileUploadInput from "../subComponents/FileUploadInput";
 import axios from "axios";
 
-function FormBuilder() {
+function FormBuilder(props) {
+  console.log("Props name in form builder ---> ",props.name);
   const [formFields, setFormFields] = useState([]);
 
   const [formData, setFormData] = useState({});
@@ -14,15 +15,102 @@ function FormBuilder() {
   useEffect(() => {
     const getDataFromDB = async () => {
       try {
-        let res = await axios.get("http://localhost:3001/formdata");
-        setFormFields(res.data);
-      } catch (error) {
+        let res;
+        if(props.name === "student"){
+          res = await axios.get("http://localhost:3001/formdata/student");
+        }
+        else if(props.name === "studentDropdown"){
+          res = await axios.get("http://localhost:3001/formdata/studentDropdown");
+        }
+        else{
+          res = await axios.get("http://localhost:3001/formdata");
+        }
+       
+        console.log("data --------->" , res.data);
+        const fetchedFormFields = res.data;
+        setFormFields(fetchedFormFields);
+
+        console.log("Data inside the formFields initially ... ",fetchedFormFields);
+
+        const updatedFormFields = await Promise.all(fetchedFormFields.map(async (component) => {
+          
+
+            if (component?.type === "col") {
+              console.log("inside col");
+              const updatedChildren = await Promise.all(component.Children.map(async (childComponent) => {
+                  if (childComponent.type === "dropdown" && childComponent.link) {
+                      try {
+                          let response = await axios.get(childComponent.link);
+                          const optionsArray = response.data;
+                          return {
+                              ...childComponent,
+                              options: optionsArray,
+                          };
+                      } catch (error) {
+                          console.error("Error fetching options data:", error);
+                          return childComponent; 
+                      }
+                  } else {
+                      return childComponent;
+                  }
+              }));
+              console.log("updatedChildren ---> ",updatedChildren);
+              component.Children = updatedChildren;
+          }
+          
+          if (component?.type === "dropdown" && component.link) {
+                try {
+                    let response = await axios.get(component.link);
+                    const optionsArray = response.data;
+                    return {
+                        ...component,
+                        options: optionsArray,
+                    };
+                } catch (error) {
+                    console.error("Error fetching options data:", error);
+                    return component;
+                }
+             }
+             else {
+                return component;
+            }
+            
+        }));
+
+        setFormFields(updatedFormFields);
+    } catch (error) {
         console.error("Error fetching form data:", error);
-      }
-    };
+    }
+};
 
     getDataFromDB();
   }, []);
+
+ 
+  // useEffect(async()=>{
+  //   const updatedFormFields = await Promise.all(formFields.map(async (component) => {
+  //     if(component?.type === "dropdown" && component.link && /{[0-9]+}/.test(component.link)) {
+  //       console.log();
+  //       const indexPlaceholder = component.link.match(/{([0-9]+)}/)[1];
+  //         const indexComponent = formFields[parseInt(indexPlaceholder)];
+  //         console.log("indexComponent is", indexComponent);
+  //         if (indexComponent) {
+  //           let receivedIndex = formData[indexComponent.label];
+  //           const link = component.link.replace(`{${indexPlaceholder}}`, receivedIndex);
+
+  //           const response = await axios.get(link);
+  //           const optionsArray = response.data;
+  //         }
+  //     }
+  //   }))
+   
+  // },[])
+
+
+  useEffect(()=>{
+    console.log("formFields ", formFields);
+    console.log("formData", formData);
+  },[formFields])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +119,19 @@ function FormBuilder() {
       // Proceed with form submission
       console.log("Form submitted successfully!");
       console.log(formData);
+      let formName=""
+      if(props.name === "student"){
+        formName = "form879";
+      }
+      else if(props.name === "studentDropdown"){
+        formName = "form326";
+      }
+      else{
+        let res = await axios.get("http://localhost:3001/formName");
+      formName = res.data;
+      }
 
-      let res = await axios.get("http://localhost:3001/formName");
-      let formName = res.data;
+     
 
 
       const formData1 = new FormData();
@@ -72,16 +170,16 @@ console.log("formData is", formData1);
   const validateForm = () => {
     let validationErrors = {};
     formFields.forEach((field) => {
-      if (field.required && !formData[field.label]) {
-        validationErrors[field.label] = `${field.label} is required`;
+      if (field?.required && !formData[field?.label]) {
+        validationErrors[field?.label] = `${field?.label} is required`;
       }
       // Check if it's a "col" component and has children
-      if (field.type === "col" && field.Children && field.Children.length > 0) {
+      if (field?.type === "col" && field.Children && field.Children.length > 0) {
         field.Children.forEach((childField) => {
-          if (childField.required && !formData[childField.label]) {
+          if (childField?.required && !formData[childField?.label]) {
             validationErrors[
-              childField.label
-            ] = `${childField.label} is required`;
+              childField?.label
+            ] = `${childField?.label} is required`;
           }
         });
       }
@@ -100,14 +198,14 @@ console.log("formData is", formData1);
     console.log("date receving is ", dateString);
     console.log("modified date receving is ", convert(dateString));
     const convertedDate = convert(dateString);
-    setFormData({ ...formData, [field.label]: convertedDate });
+    setFormData({ ...formData, [field?.label]: convertedDate });
   };
 
   const handleChangeForFiles = (file, field) => {
     console.log("date receving is ", file);
     file.arrayBuffer().then((buffer) => {
       console.log("Binary data:", buffer);
-      setFormData({ ...formData, [field.label]: buffer });
+      setFormData({ ...formData, [field?.label]: buffer });
     });
     
   };
@@ -119,19 +217,45 @@ console.log("formData is", formData1);
     // const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
 
     // if (hasSpecialChar) {
-    //   setErrors({ ...errors, [field.label]: `${field.label} cannot contain special characters` });
+    //   setErrors({ ...errors, [field?.label]: `${field?.label} cannot contain special characters` });
     // } else {
     //   // Clear error message if no special character is found
-    setErrors({ ...errors, [field.label]: "" });
-    //   setFormData({ ...formData, [field.label]: value });
+    setErrors({ ...errors, [field?.label]: "" });
+    //   setFormData({ ...formData, [field?.label]: value });
     // }
-    setFormData({ ...formData, [field.label]: value });
+    setFormData({ ...formData, [field?.label]: value });
   };
+
+  const handleChangeDropdown = async (e, field, index) => {
+    const value = e.target.value;
+    if (field.linkForNext) {
+        const placeholders = field.linkForNext.match(/{[0-9]+}/g);
+        let updatedLink = field.linkForNext
+
+        for(let i = 0;i<placeholders.length;i++){
+          let pIndex = placeholders[i];
+          pIndex = parseInt(pIndex.slice(1, -1));
+
+          let lableForFormData = formFields[pIndex]?.label
+          let updateLinkValue = pIndex === index ? value : formData[lableForFormData]
+          updatedLink = updatedLink.replace(placeholders[i], updateLinkValue)
+        }
+       
+        console.log("Final Updated Link: ", updatedLink);
+        console.log("to fill data ", field.nextIndex);
+
+        const response = await axios.get(updatedLink);
+        const optionsArray = response.data;
+  
+        formFields[field.nextIndex].options = [...optionsArray]
+    }
+    setFormData({ ...formData, [field?.label]: value });
+};
 
   const renderField = (field, index) => {
     
-
-    switch (field.type) {
+// console.log("field, index is ",field, index);
+    switch (field?.type) {
       case "textInput":
         return (
           <div className="flex items-center" key={index}>
@@ -157,7 +281,7 @@ console.log("formData is", formData1);
               htmlFor={`checkbox-${index}`}
               className="text-sm text-gray-700"
             >
-              {field.label}
+              {field?.label}
             </label>
           </div>
         );
@@ -166,8 +290,8 @@ console.log("formData is", formData1);
           <select
             key={index}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500"
-            onChange={(e) => handleChange(e, field)}
-            value={formData[field.label] || ""}
+            onChange={(e) => handleChangeDropdown(e, field, index)}
+            value={formData[field?.label] || ""}
           >
             <option value="" disabled>
               Select
@@ -237,7 +361,7 @@ console.log("formData is", formData1);
     <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
       {formFields.map((field, index) => {
         if (
-          field.type === "col" &&
+          field?.type === "col" &&
           field.rowCode &&
           field.Children &&
           field.Children.length > 0
@@ -251,16 +375,16 @@ console.log("formData is", formData1);
               {field.Children.map((childField, childIndex) => (
                 <div key={childIndex} className={childIndex === 0 ? `col-${digitArray[0]}` : childIndex === 1 ? `col-${digitArray[1]}` : childIndex === 2 ? `col-${digitArray[2]}` : ""}>
                   <label className="block mb-1 font-medium text-gray-700">
-                    {childField.label}
-                    {childField.required && (
+                    {childField?.label}
+                    {childField?.required && (
                       <span className="text-red-500 pl-0.5">*</span>
                     )}
                   </label>
 
                   {renderField(childField, childIndex)}
-                  {errors[childField.label] && (
+                  {errors[childField?.label] && (
                     <div className="text-red-500">
-                      {errors[childField.label]}
+                      {errors[childField?.label]}
                     </div>
                   )}
                 </div>
@@ -272,7 +396,7 @@ console.log("formData is", formData1);
 
         else if(
          
-            field.type === "col" &&
+            field?.type === "col" &&
             
             field.Children &&
             field.Children.length > 0
@@ -282,16 +406,16 @@ console.log("formData is", formData1);
                 {field.Children.map((childField, childIndex) => (
                   <div key={childIndex} className="flex-1 mr-2">
                     <label className="block mb-1 font-medium text-gray-700">
-                      {childField.label}
-                      {childField.required && (
+                      {childField?.label}
+                      {childField?.required && (
                         <span className="text-red-500 pl-0.5">*</span>
                       )}
                     </label>
   
                     {renderField(childField, childIndex)}
-                    {errors[childField.label] && (
+                    {errors[childField?.label] && (
                       <div className="text-red-500">
-                        {errors[childField.label]}
+                        {errors[childField?.label]}
                       </div>
                     )}
                   </div>
@@ -305,17 +429,17 @@ console.log("formData is", formData1);
         else {
           return (
             <div key={index} className="mb-4">
-              {field.type !== "col" && (
+              {field?.type !== "col" && (
                 <label className="block mb-1 font-medium text-gray-700">
-                  {field.label}
-                  {field.required && (
+                  {field?.label}
+                  {field?.required && (
                     <span className="text-red-500 pl-0.5">*</span>
                   )}
                 </label>
               )}
               {renderField(field, index)}
-              {errors[field.label] && (
-                <div className="text-red-500">{errors[field.label]}</div>
+              {errors[field?.label] && (
+                <div className="text-red-500">{errors[field?.label]}</div>
               )}
             </div>
           );

@@ -37,7 +37,7 @@ export function Canvas() {
       case "checkbox":
         return { label: "", placeholder: "", required: false };
       case "dropdown":
-        return { label: "", options: [], link: "", required: false };
+        return { label: "", options: [], link: "",linkForNext:"",nextIndex:"", required: false };
       case "numberinput":
         return { label: "", required: false };
       case "datepicker":
@@ -151,6 +151,17 @@ export function Canvas() {
       return updatedComponents;
     });
   };
+  const handleLinkChangeForNext = (index,property, value) => {
+    setFormComponents((prevFormComponents) => {
+      const updatedComponents = [...prevFormComponents];
+      updatedComponents[index] = {
+        ...updatedComponents[index],
+        [property]: value.trim(),
+      };
+      return updatedComponents;
+    });
+  };
+
   const handleLinkChange = (index, value) => {
     setFormComponents((prevFormComponents) => {
       const updatedComponents = [...prevFormComponents];
@@ -174,7 +185,7 @@ export function Canvas() {
       updatedChildComponents[childIndex] = updatedChildComponent;
       updatedComponents[parentIndex] = {
         ...parentComponent,
-        options: updatedChildComponents,
+        Children: updatedChildComponents,
       };
 
       return updatedComponents;
@@ -258,7 +269,6 @@ export function Canvas() {
   const handleNestedDeleteComponent = (parentIndex, childIndex) => {
     setFormComponents((prevFormComponents) => {
       const updatedComponents = [...prevFormComponents];
-      // Remove the child component at the given index from the parent's Children array
       updatedComponents[parentIndex].Children.splice(childIndex, 1);
       return updatedComponents;
     });
@@ -273,7 +283,7 @@ export function Canvas() {
     setFormComponents((prevFormComponents) => {
       const updatedComponents = [...prevFormComponents];
       updatedComponents[parentIndex].Children[childIndex] = {
-        ...updatedComponents[parentIndex].Children[childIndex], // delete it from here
+        ...updatedComponents[parentIndex].Children[childIndex],
         [property]: value,
       };
       return updatedComponents;
@@ -588,14 +598,14 @@ export function Canvas() {
                   onChange={(e) => handleOptionsChange(index, e.target.value)}
                   className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
                 />
-                <p className="text-gray-700 mt-2">provide a link</p>
+                <p className="text-gray-700 mt-2">provide a link for this component</p>
                 <div className="flex items-center">
                   <input
                     type="text"
                     placeholder="http://......"
                     value={component.link}
                     onChange={(e) => handleLinkChange(index, e.target.value)}
-                    className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                    className=" p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
                   />
                   <button
                     onClick={() => getDataOfOptionsFromTheLink(index)} // Assuming getData function is defined elsewhere
@@ -603,6 +613,24 @@ export function Canvas() {
                   >
                     Get
                   </button>
+                </div>
+                <p className="text-gray-700 mt-2">provide a link including index Number in curly braces</p>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    placeholder="http://......"
+                    value={component.linkForNext}
+                    onChange={(e) => handleLinkChangeForNext(index,"linkForNext", e.target.value)}
+                    className=" p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
+                  {/* <p className="text-gray-700 mt-2">Index</p> */}
+                  <input
+                    type="text"
+                    placeholder="Index"
+                    value={component.nextIndex}
+                    onChange={(e) => handleLinkChangeForNext(index,"nextIndex", e.target.value)}
+                    className="m-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
+                  />
                 </div>
                 <div className="mt-2 flex items-center">
                   <input
