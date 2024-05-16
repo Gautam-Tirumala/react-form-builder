@@ -1,8 +1,15 @@
 import React, { Children, useEffect, useRef, useState } from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+
 
 import axios from "axios";
 import GridComponent from "./GridComponent";
+import HeaderComponent from "../FormComponents/Header";
+import TextInputComponent from "../FormComponents/TextInput";
+import TextareaComponent from "../FormComponents/TextArea";
+import CheckboxComponent from "../FormComponents/Checkbox";
+import DropdownComponent from "../FormComponents/DropDown";
 
 export function Canvas() {
   const [formComponents, setFormComponents] = useState([]);
@@ -74,9 +81,9 @@ export function Canvas() {
   };
 
   const handleDrop = (e) => {
+    console.log("Handle Drop called ");
     e.preventDefault();
     e.stopPropagation();
-    console.log("handleDrop called");
     // const hoveredDiv =
     // .id
     const componentType = e.dataTransfer.getData("componentType");
@@ -337,6 +344,42 @@ export function Canvas() {
     // console.log("Form components after removing col",formComponents);
   };
 
+  function handleDragEnd(event) {
+    // const { active, over } = event;
+
+    console.log("Hello");
+  
+    // if (active.id !== over.id && over.id !== 'root') {
+    //   setFormComponents((components) => {
+    //     const draggedComponent = components.find((component) => component.id === active.id);
+    //     const overIndex = components.findIndex((component) => component.id === over.id);
+    //     const newComponents = [...components];
+  
+    //     // Remove the dragged component from its original position
+    //     newComponents.splice(components.findIndex((component) => component.id === active.id), 1);
+  
+    //     // Insert the dragged component at the new position
+    //     newComponents.splice(overIndex, 0, draggedComponent);
+
+    //     console.log("New Form Components are --->" , newComponents);
+  
+    //     return newComponents;
+    //   });
+    // }
+  }
+  
+  
+
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor)
+  );
+
+  function shouldComponentBeDraggable(component) {
+    const draggableTypes = ["header", "textInput", "textarea", "checkbox", "dropdown"];
+    return draggableTypes.includes(component.type);
+  }
+
   return (
     <div
       ref={canvasRef}
@@ -344,11 +387,12 @@ export function Canvas() {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
+       {/* <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}> */}
       <div className="p-4 ">
         <h2 className="text-lg font-bold mb-2">Form Preview</h2>
 
         {formComponents.map((component, index) => (
-          <div key={index} className="mb-2">
+          <div key={index} className="mb-2" draggable={shouldComponentBeDraggable(component)}>
             {component.type === "grid" && (
               <div className="mt-4">
                 <div className=" flex justify-end">
@@ -364,302 +408,53 @@ export function Canvas() {
             )}
 
             {component.type === "header" && (
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800">Header</h4>
-                <div className=" flex justify-end ">
-                  <button
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    onClick={() => handleDeleteComponent(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-                <label
-                  htmlFor={`heading-input-${index}`}
-                  className="block text-gray-700"
-                >
-                  Label:
-                </label>
-                <input
-                  type="text"
-                  id={`heading-input-${index}`}
-                  value={component.label}
-                  onChange={(e) =>
-                    handleComponentChange(index, "label", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-              </div>
+            <HeaderComponent
+            index={index}
+            component={component}
+            handleDeleteComponent={handleDeleteComponent}
+            handleComponentChange={handleComponentChange}
+          />
             )}
 
             {component.type === "textInput" && (
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800 ">
-                  Text Input
-                </h4>
-                <div className=" flex justify-end ">
-                  <button
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    onClick={() => handleDeleteComponent(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-
-                <label
-                  htmlFor={`text-label-${index}`}
-                  className="block text-gray-700"
-                >
-                  Label:
-                </label>
-                <input
-                  type="text"
-                  id={`text-label-${index}`}
-                  value={component.label}
-                  onChange={(e) =>
-                    handleComponentChange(index, "label", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <label
-                  htmlFor={`text-placeholder-${index}`}
-                  className="block text-gray-700 mt-2"
-                >
-                  Placeholder:
-                </label>
-                <input
-                  type="text"
-                  id={`text-placeholder-${index}`}
-                  value={component.placeholder}
-                  onChange={(e) =>
-                    handleComponentChange(index, "placeholder", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <div className="mt-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`required-checkbox-${index}`}
-                    checked={component.required}
-                    onChange={(e) =>
-                      handleComponentChange(index, "required", e.target.checked)
-                    }
-                    className="mr-2"
-                  />
-                  <label
-                    htmlFor={`required-checkbox-${index}`}
-                    className="text-gray-700"
-                  >
-                    Required
-                  </label>
-                </div>
-              </div>
+              <TextInputComponent
+              index={index}
+              component={component}
+              handleDeleteComponent={handleDeleteComponent}
+              handleComponentChange={handleComponentChange}
+            />
             )}
 
             {component.type === "textarea" && (
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800 ">
-                  Text Area
-                </h4>
-                <div className=" flex justify-end ">
-                  <button
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    onClick={() => handleDeleteComponent(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-
-                <label
-                  htmlFor={`textarea-label-${index}`}
-                  className="block text-gray-700"
-                >
-                  Label:
-                </label>
-                <input
-                  type="text"
-                  id={`textarea-label-${index}`}
-                  value={component.label}
-                  onChange={(e) =>
-                    handleComponentChange(index, "label", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <label
-                  htmlFor={`textarea-placeholder-${index}`}
-                  className="block text-gray-700 mt-2"
-                >
-                  Placeholder:
-                </label>
-                <input
-                  type="text"
-                  id={`textarea-placeholder-${index}`}
-                  value={component.placeholder}
-                  onChange={(e) =>
-                    handleComponentChange(index, "placeholder", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <div className="mt-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`required-checkbox-${index}`}
-                    checked={component.required}
-                    onChange={(e) =>
-                      handleComponentChange(index, "required", e.target.checked)
-                    }
-                    className="mr-2"
-                  />
-                  <label
-                    htmlFor={`required-checkbox-${index}`}
-                    className="text-gray-700"
-                  >
-                    Required
-                  </label>
-                </div>
-              </div>
+              
+              <TextareaComponent
+              index={index}
+              component={component}
+              handleDeleteComponent={handleDeleteComponent}
+              handleComponentChange={handleComponentChange}
+            />
             )}
 
             {component.type === "checkbox" && (
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800 ">
-                  Checkbox
-                </h4>
-                <div className=" flex justify-end ">
-                  <button
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    onClick={() => handleDeleteComponent(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-
-                <label
-                  htmlFor={`checkbox-label-${index}`}
-                  className="block text-gray-700"
-                >
-                  Label:
-                </label>
-                <input
-                  type="text"
-                  id={`checkbox-label-${index}`}
-                  value={component.label}
-                  onChange={(e) =>
-                    handleComponentChange(index, "label", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <div className="mt-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`required-checkbox-${index}`}
-                    checked={component.required}
-                    onChange={(e) =>
-                      handleComponentChange(index, "required", e.target.checked)
-                    }
-                    className="mr-2"
-                  />
-                  <label
-                    htmlFor={`required-checkbox-${index}`}
-                    className="text-gray-700"
-                  >
-                    Required
-                  </label>
-                </div>
-              </div>
+              <CheckboxComponent
+              index={index}
+              component={component}
+              handleDeleteComponent={handleDeleteComponent}
+              handleComponentChange={handleComponentChange}
+            />
             )}
 
             {component.type === "dropdown" && (
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold text-gray-800 ">
-                  Drop Down
-                </h4>
-                <div className=" flex justify-end ">
-                  <button
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-                    onClick={() => handleDeleteComponent(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-
-                <label
-                  htmlFor={`dropdown-label-${index}`}
-                  className="block text-gray-700"
-                >
-                  Label:
-                </label>
-                <input
-                  type="text"
-                  id={`dropdown-label-${index}`}
-                  value={component.label}
-                  onChange={(e) =>
-                    handleComponentChange(index, "label", e.target.value)
-                  }
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <p className="text-gray-700 mt-2">
-                  Enter Options separated by commas (,)
-                </p>
-                <input
-                  type="text"
-                  placeholder="Option 1, Option 2, ..."
-                  value={component.options.join(", ")}
-                  onChange={(e) => handleOptionsChange(index, e.target.value)}
-                  className="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                />
-                <p className="text-gray-700 mt-2">provide a link for this component</p>
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    placeholder="http://......"
-                    value={component.link}
-                    onChange={(e) => handleLinkChange(index, e.target.value)}
-                    className=" p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                  />
-                  <button
-                    onClick={() => getDataOfOptionsFromTheLink(index)} // Assuming getData function is defined elsewhere
-                    className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
-                  >
-                    Get
-                  </button>
-                </div>
-                <p className="text-gray-700 mt-2">provide a link including index Number in curly braces</p>
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    placeholder="http://......"
-                    value={component.linkForNext}
-                    onChange={(e) => handleLinkChangeForNext(index,"linkForNext", e.target.value)}
-                    className=" p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                  />
-                  {/* <p className="text-gray-700 mt-2">Index</p> */}
-                  <input
-                    type="text"
-                    placeholder="Index"
-                    value={component.nextIndex}
-                    onChange={(e) => handleLinkChangeForNext(index,"nextIndex", e.target.value)}
-                    className="m-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 block w-full"
-                  />
-                </div>
-                <div className="mt-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`required-checkbox-${index}`}
-                    checked={component.required}
-                    onChange={(e) =>
-                      handleComponentChange(index, "required", e.target.checked)
-                    }
-                    className="mr-2"
-                  />
-                  <label
-                    htmlFor={`required-checkbox-${index}`}
-                    className="text-gray-700"
-                  >
-                    Required
-                  </label>
-                </div>
-              </div>
+               <DropdownComponent
+               index={index}
+               component={component}
+               handleDeleteComponent={handleDeleteComponent}
+               handleComponentChange={handleComponentChange}
+               handleOptionsChange={handleOptionsChange}
+               handleLinkChange={handleLinkChange}
+               handleLinkChangeForNext={handleLinkChangeForNext}
+               getDataOfOptionsFromTheLink={getDataOfOptionsFromTheLink}
+             />
             )}
 
             {/* This elements are for columns nested  */}
@@ -670,7 +465,7 @@ export function Canvas() {
                 <h4 className="text-lg font-semibold text-gray-800">
                   Drag and drop{" "}
                   {component.rowCode
-                    ? `${String(component.rowCode).length} elements into box`
+                    ? `${String(component.rowCode).length} elements into box rowCode ${component.rowCode}`
                     : "your elements into box"}
                 </h4>
                 <div
@@ -684,7 +479,7 @@ export function Canvas() {
 
                     {component.Children.map((childComponent, childIndex) => (
                       <div key={childIndex} className="m-2">
-                        {childComponent.type === "header" && (
+                        {childComponent.type === "header" && (    
                           <div className="mt-4">
                             <h4 className="text-lg font-semibold text-gray-800">
                               Header
@@ -1157,6 +952,7 @@ export function Canvas() {
                 </div>
               </div>
             )}
+            
 
             {["numberinput", "datepicker", "fileupload"].includes(
               component.type
@@ -1223,6 +1019,8 @@ export function Canvas() {
           Confirm and Submit
         </button>
       )}
+    
+    {/* </DndContext> */}
     </div>
   );
 }

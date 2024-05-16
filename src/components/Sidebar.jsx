@@ -1,133 +1,41 @@
-import React, { useState } from "react";
-
+import React from "react";
 
 export function Sidebar() {
+  const components = [
+    { text: "Heading", type: "header" },
+    { text: "Row", type: "col" },
+    { text: "Grid", type: "grid" },
+    { text: "Text Input", type: "textInput" },
+    { text: "Check Box", type: "checkbox" },
+    { text: "Dropdown", type: "dropdown" },
+    { text: "Textarea", type: "textarea" },
+    { text: "Number input", type: "numberinput" },
+    { text: "Date Picker", type: "datepicker" },
+    { text: "File Upload", type: "fileupload" }
+  ];
+
   return (
     <div className="w-1/5 min-h-full bg-gray-200 overflow-auto">
       {/* Components list */}
       <div className="p-4">
         <div className="mb-4">
           <h2 className="text-lg font-bold mb-2">Components</h2>
-          {/* Button to drag the text input component */}
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded "
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "header");
-            }}
-          >
-            Heading
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "col");
-            }}
-          >
-            Row
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "grid");
-            }}
-          >
-            Grid
-          </button>
-        </div>
-
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "textInput");
-            }}
-          >
-            Text Input
-          </button>
-        </div>
-        {/* Checkbox component */}
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "checkbox");
-            }}
-          >
-            Check Box
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "dropdown");
-            }}
-          >
-            Dropdown
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "textarea");
-            }}
-          >
-            Textarea
-          </button>
-        </div>
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "numberinput");
-            }}
-          >
-            Number input
-          </button>
-        </div>
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "datepicker");
-            }}
-          >
-            Date Picker
-          </button>
-        </div>
-        <div className="mb-4">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            draggable="true"
-            onDragStart={(e) => {
-              e.dataTransfer.setData("componentType", "fileupload");
-            }}
-          >
-            File Upload
-          </button>
+          {/* Mapping over components array to render buttons */}
+          {components.map((component, index) => (
+            <div key={index} className="mb-4">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                draggable="true"
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("componentType", component.type);
+                }}
+              >
+                {component.text}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
-

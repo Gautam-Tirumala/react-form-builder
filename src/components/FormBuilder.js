@@ -237,7 +237,7 @@ console.log("formData is", formData1);
     if (field.linkForNext) {
       console.log("field is ",field);
       let placeholders
-        if(field.linkForNext.match(/{[0-9]+_[0-9]+}/g).length > 0){
+        if(field.linkForNext.match(/{[0-9]+_[0-9]+}/g)?.length > 0){
           placeholders = field.linkForNext.match(/{[0-9]+_[0-9]+}/g);
           let updatedLink = field.linkForNext
 

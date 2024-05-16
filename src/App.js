@@ -6,6 +6,7 @@ import FormBuilder from './components/FormBuilder'
 import {rSuiteComponents} from '@react-form-builder/components-rsuite'
 
 import GridComponent from './components/GridComponent'
+import QuerySelector from './components/QuerySelector';
 
 // import {BuilderView, FormBuilder} from '@react-form-builder/designer'
 
@@ -25,6 +26,8 @@ export default function App() {
         <FormBuilder name="studentDropdown" />
       ) :  url === "http://localhost:3000/preview/dropdownExample" ? (
         <FormBuilder name="dropdownExample" />
+      ) : url === "http://localhost:3000/preview/queryBuilder" ? (
+        <QuerySelector/>
       ) :
        (
         <FormBuilder />
@@ -33,5 +36,6 @@ export default function App() {
     </>
   ) : (
     <Home />
+    // <QuerySelector/>
   );
 }
